@@ -125,23 +125,20 @@ pub fn hash_seeded(buf: &[u8], seed: u64) -> u64 {
             // the old `byte` is executed, which might trigger the diffusion to run serially.
             // However, not introducing a tmp register makes sure that you don't push from the
             // register to the stack, which comes with a performance hit.
-            a = a ^ read_u64(ptr);
+            
+            // We also interleave the diffuse ops to maximize the chances that integer ALU ports
+            // are available
+            a = diffuse(a ^ read_u64(ptr));
             ptr = ptr.offset(8);
 
-            b = b ^ read_u64(ptr);
+            b = diffuse(b ^ read_u64(ptr));
             ptr = ptr.offset(8);
 
-            c = c ^ read_u64(ptr);
+            c = diffuse(c ^ read_u64(ptr));
             ptr = ptr.offset(8);
 
-            d = d ^ read_u64(ptr);
+            d = diffuse(d ^ read_u64(ptr));
             ptr = ptr.offset(8);
-
-            // Diffuse the updated registers. We hope that each of these are executed in parallel.
-            a = diffuse(a);
-            b = diffuse(b);
-            c = diffuse(c);
-            d = diffuse(d);
         }
 
         // Rename the register (we do this to make it easier for LLVM to reallocate the register).
