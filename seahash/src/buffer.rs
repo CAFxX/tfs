@@ -150,111 +150,65 @@ pub fn hash_seeded(buf: &[u8], seed: u64) -> u64 {
         match excessive {
             0 => {},
             1...7 => {
-                // 1 or more excessive.
-
                 // Write the last excessive bytes (<8 bytes).
-                a = a ^ read_int(slice::from_raw_parts(ptr as *const u8, excessive));
-
-                // Diffuse.
-                a = diffuse(a);
+                a = diffuse(a ^ read_int(slice::from_raw_parts(ptr as *const u8, excessive)));
             },
             8 => {
-                // 8 bytes excessive.
-
                 // Update `a`.
-                a = a ^ read_u64(ptr);
-
-                // Diffuse.
-                a = diffuse(a);
+                a = diffuse(a ^ read_u64(ptr));
             },
             9...15 => {
-                // More than 8 bytes excessive.
-
                 // Update `a`.
-                a = a ^ read_u64(ptr);
+                a = diffuse(a ^ read_u64(ptr));
                 ptr = ptr.offset(8);
 
                 // Write the last excessive bytes (<8 bytes).
                 excessive = excessive - 8;
-                b = b ^ read_int(slice::from_raw_parts(ptr as *const u8, excessive));
-
-                // Diffuse.
-                a = diffuse(a);
-                b = diffuse(b);
-
+                b = diffuse(b ^ read_int(slice::from_raw_parts(ptr as *const u8, excessive)));
             },
             16 => {
-                // 16 bytes excessive.
-
                 // Update `a`.
-                a = a ^ read_u64(ptr);
+                a = diffuse(a ^ read_u64(ptr));
                 ptr = ptr.offset(8);
                 // Update `b`.
-                b = b ^ read_u64(ptr);
-
-                // Diffuse.
-                a = diffuse(a);
-                b = diffuse(b);
+                b = diffuse(b ^ read_u64(ptr));
             },
             17...23 => {
-                // 16 bytes or more excessive.
-
                 // Update `a`.
-                a = a ^ read_u64(ptr);
+                a = diffuse(a ^ read_u64(ptr));
                 ptr = ptr.offset(8);
                 // Update `b`.
-                b = b ^ read_u64(ptr);
+                b = diffuse(b ^ read_u64(ptr));
                 ptr = ptr.offset(8);
 
                 // Write the last excessive bytes (<8 bytes).
                 excessive = excessive - 16;
-                c = c ^ read_int(slice::from_raw_parts(ptr as *const u8, excessive));
-
-                // Diffuse.
-                a = diffuse(a);
-                b = diffuse(b);
-                c = diffuse(c);
+                c = diffuse(c ^ read_int(slice::from_raw_parts(ptr as *const u8, excessive)));
             },
             24 => {
-                // 24 bytes excessive.
-
                 // Update `a`.
-                a = a ^ read_u64(ptr);
+                a = diffuse(a ^ read_u64(ptr));
                 ptr = ptr.offset(8);
                 // Update `b`.
-                b = b ^ read_u64(ptr);
+                b = diffuse(b ^ read_u64(ptr));
                 ptr = ptr.offset(8);
                 // Update `c`.
-                c = c ^ read_u64(ptr);
-
-                // Diffuse.
-                a = diffuse(a);
-                b = diffuse(b);
-                c = diffuse(c);
+                c = diffuse(c ^ read_u64(ptr));
             },
             _ => {
-                // More than 24 bytes excessive.
-
                 // Update `a`.
-                a = a ^ read_u64(ptr);
+                a = diffuse(a ^ read_u64(ptr));
                 ptr = ptr.offset(8);
                 // Update `b`.
-                b = b ^ read_u64(ptr);
+                b = diffuse(b ^ read_u64(ptr));
                 ptr = ptr.offset(8);
                 // Update `c`.
-                c = c ^ read_u64(ptr);
+                c = diffuse(c ^ read_u64(ptr));
                 ptr = ptr.offset(8);
 
                 // Write the last excessive bytes (<8 bytes).
                 excessive = excessive - 24;
-                d = d ^ read_int(slice::from_raw_parts(ptr as *const u8, excessive));
-
-                // Diffuse.
-                a = diffuse(a);
-                b = diffuse(b);
-                c = diffuse(c);
-                d = diffuse(d);
-
+                d = diffuse(d ^ read_int(slice::from_raw_parts(ptr as *const u8, excessive)));
             }
         }
 
